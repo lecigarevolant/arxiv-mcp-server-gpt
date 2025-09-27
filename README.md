@@ -123,6 +123,10 @@ On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json` On W
 
 You may need to put the full path to the uv executable in the command field. You can get this by running `which uv` on MacOS or `where uv` on Windows.
 
+## Deployment
+- Hosted platforms such as Smithery require HTTP transport. Set `MCP_TRANSPORT=http`; the server will bind to the `PORT` environment variable provided by the platform.
+- For local stdio integrations, no additional configuration is required—the server defaults to STDIO when `PORT` is not set.
+
 ## Example Prompts
 ```
 Can you get the details of 'Reasoning to Learn from Latent Thoughts' paper?

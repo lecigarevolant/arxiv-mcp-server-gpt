@@ -1,3 +1,4 @@
+import argparse
 import os
 import re
 import difflib
@@ -407,8 +408,42 @@ async def search_arxiv(
         entries[article_title] = {"arXiv ID": arxiv_id, "Authors": authors}
     return entries
 
+def _resolve_port(arg_port: Optional[int]) -> int:
+    if arg_port is not None:
+        return arg_port
+    for key in ("MCP_PORT", "PORT"):
+        value = os.getenv(key)
+        if value:
+            try:
+                return int(value)
+            except ValueError:
+                raise ValueError(f"Invalid integer for {key}: {value}")
+    return 8081
+
+
 def main():
-    mcp.run(transport="stdio")
+    parser = argparse.ArgumentParser(description="Run the arXiv MCP server.")
+    parser.add_argument(
+        "--transport",
+        choices=("stdio", "http"),
+        help="Transport to use. Defaults to HTTP when PORT is set, otherwise STDIO.",
+    )
+    parser.add_argument("--host", help="Host to bind for HTTP transport (default 0.0.0.0).")
+    parser.add_argument("--port", type=int, help="Port to bind for HTTP transport.")
+    args = parser.parse_args()
+
+    transport = args.transport or os.getenv("MCP_TRANSPORT")
+    if not transport:
+        transport = "http" if os.getenv("PORT") else "stdio"
+
+    if transport == "http":
+        host = args.host or os.getenv("MCP_HOST") or os.getenv("HOST") or "0.0.0.0"
+        port = _resolve_port(args.port)
+        print(f"Starting arxiv-server via HTTP on {host}:{port}")
+        mcp.run(transport="http", host=host, port=port)
+    else:
+        print("Starting arxiv-server via STDIO transport")
+        mcp.run(transport="stdio")
 
 if __name__ == "__main__":
     main()

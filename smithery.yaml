@@ -1,7 +1,7 @@
 # Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
 
 startCommand:
-  type: stdio
+  type: http
   configSchema:
     # JSON Schema defining the configuration options for the MCP.
     type: object
@@ -12,8 +12,15 @@ startCommand:
         default: /data
         description: Path to save downloaded PDFs
   commandFunction:
-    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    # A JS function that produces the CLI command based on the given config to start the MCP over HTTP.
     |-
-    (config) => ({ command: 'python', args: ['src/arxiv_server/server.py'], env: { DOWNLOAD_PATH: config.downloadPath } })
+    (config) => ({
+      command: 'python',
+      args: ['src/arxiv_server/server.py', '--transport', 'http'],
+      env: {
+        DOWNLOAD_PATH: config.downloadPath ?? '/data',
+        MCP_TRANSPORT: 'http'
+      }
+    })
   exampleConfig:
     downloadPath: /data
