@@ -15,24 +15,34 @@ A Model Context Protocol (MCP) server that enables interacting with the arXiv AP
 
 ## Tools
 - **get_article_url**
-    - Retrieve the URL of an article hosted on arXiv.org based on its title
-        - `title` (String): Article title
+    - Retrieve the direct PDF URL by title or arXiv ID
+        - `title` (String, optional)
+        - `arxiv_id` (String, optional)
 - **download_article**
-    - Download the article hosted on arXiv.org as a PDF file 
-        - `title` (String): Article title
+    - Download the article as a PDF
+        - `title` (String, optional)
+        - `arxiv_id` (String, optional)
 - **load_article_to_context**
-    - Load the article hosted on arXiv.org into context of a LLM 
-        - `title` (String): Article title
+    - Load article text into context (partial extraction supported)
+        - `title` (String, optional)
+        - `arxiv_id` (String, optional)
+        - `start_page` (Int, optional, 1-based)
+        - `end_page` (Int, optional, 1-based)
+        - `max_pages` (Int, optional)
+        - `max_chars` (Int, optional)
+        - `preview` (Bool, optional; HEAD check only)
 - **get_details**
-    - Retrieve metadata of an article hosted on arXiv.org based on its title
-        - `title` (String): Article title
+    - Retrieve metadata by title or arXiv ID
+        - `title` (String, optional)
+        - `arxiv_id` (String, optional)
 - **search_arxiv**
-    - Performs a search query on the arXiv API based on specified parameters and returns matching article metadata
+    - Search arXiv and return matching article metadata
         - `all_fields` (String): General keyword search across all metadata fields
         - `title` (String): Keyword(s) to search for within the titles of articles
         - `author` (String): Author name(s) to filter results by
         - `abstract` (String): Keyword(s) to search for within article abstracts
-        - `start` (int): Index of the first result to return
+        - `start` (Int): Index of the first result to return
+        - `max_results` (Int, default 10, up to 50)
 
 ## Setup
 
