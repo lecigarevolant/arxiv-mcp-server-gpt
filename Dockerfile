@@ -8,7 +8,7 @@ ENV DOWNLOAD_PATH=/data
 RUN mkdir -p ${DOWNLOAD_PATH}
 
 # Copy project metadata first (to install dependencies)
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
 
 # Install dependencies
 RUN pip install uv
