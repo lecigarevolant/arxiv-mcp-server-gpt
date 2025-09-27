@@ -9,7 +9,7 @@ import uuid
 from typing import Optional, Tuple, Dict, Any
 
 import httpx
-from mcp.server.fastmcp import Context, FastMCP
+from fastmcp import Context, FastMCP
 import feedparser
 import fitz
 
@@ -430,6 +430,7 @@ def main():
     )
     parser.add_argument("--host", help="Host to bind for HTTP transport (default 0.0.0.0).")
     parser.add_argument("--port", type=int, help="Port to bind for HTTP transport.")
+    parser.add_argument("--path", help="HTTP endpoint path (default /.well-known/mcp).")
     args = parser.parse_args()
 
     transport = args.transport or os.getenv("MCP_TRANSPORT")
@@ -439,17 +440,17 @@ def main():
     if transport == "http":
         host = args.host or os.getenv("MCP_HOST") or os.getenv("HOST") or "0.0.0.0"
         port = _resolve_port(args.port)
-        # Configure FastMCP HTTP settings before starting SSE transport
-        mcp.settings.host = host
-        mcp.settings.port = port
-        sse_path = os.getenv("MCP_SSE_PATH") or os.getenv("FASTMCP_SSE_PATH")
-        if sse_path:
-            mcp.settings.sse_path = sse_path
-        message_path = os.getenv("MCP_MESSAGE_PATH") or os.getenv("FASTMCP_MESSAGE_PATH")
-        if message_path:
-            mcp.settings.message_path = message_path
-        print(f"Starting arxiv-server via HTTP (SSE) on {host}:{port}")
-        mcp.run(transport="sse")
+        path = (
+            args.path
+            or os.getenv("MCP_HTTP_PATH")
+            or os.getenv("FASTMCP_STREAMABLE_HTTP_PATH")
+            or os.getenv("FASTMCP_HTTP_PATH")
+            or "/.well-known/mcp"
+        )
+        if not path.startswith("/"):
+            path = f"/{path}"
+        print(f"Starting arxiv-server via HTTP on {host}:{port}{path}")
+        mcp.run(transport="http", host=host, port=port, path=path)
     else:
         print("Starting arxiv-server via STDIO transport")
         mcp.run(transport="stdio")

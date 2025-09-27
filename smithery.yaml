@@ -16,12 +16,10 @@ startCommand:
     |-
     (config) => ({
       command: 'python',
-      args: ['src/arxiv_server/server.py', '--transport', 'http'],
+      args: ['src/arxiv_server/server.py', '--transport', 'http', '--path', '/.well-known/mcp'],
       env: {
         DOWNLOAD_PATH: config.downloadPath ?? '/data',
-        MCP_TRANSPORT: 'http',
-        FASTMCP_SSE_PATH: '/.well-known/mcp/sse',
-        FASTMCP_MESSAGE_PATH: '/.well-known/mcp/messages/'
+        MCP_TRANSPORT: 'http'
       }
     })
   exampleConfig:
