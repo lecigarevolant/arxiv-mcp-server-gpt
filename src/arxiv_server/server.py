@@ -439,8 +439,17 @@ def main():
     if transport == "http":
         host = args.host or os.getenv("MCP_HOST") or os.getenv("HOST") or "0.0.0.0"
         port = _resolve_port(args.port)
-        print(f"Starting arxiv-server via HTTP on {host}:{port}")
-        mcp.run(transport="http", host=host, port=port)
+        # Configure FastMCP HTTP settings before starting SSE transport
+        mcp.settings.host = host
+        mcp.settings.port = port
+        sse_path = os.getenv("MCP_SSE_PATH") or os.getenv("FASTMCP_SSE_PATH")
+        if sse_path:
+            mcp.settings.sse_path = sse_path
+        message_path = os.getenv("MCP_MESSAGE_PATH") or os.getenv("FASTMCP_MESSAGE_PATH")
+        if message_path:
+            mcp.settings.message_path = message_path
+        print(f"Starting arxiv-server via HTTP (SSE) on {host}:{port}")
+        mcp.run(transport="sse")
     else:
         print("Starting arxiv-server via STDIO transport")
         mcp.run(transport="stdio")

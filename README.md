@@ -124,7 +124,7 @@ On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json` On W
 You may need to put the full path to the uv executable in the command field. You can get this by running `which uv` on MacOS or `where uv` on Windows.
 
 ## Deployment
-- Hosted platforms such as Smithery require HTTP transport. Set `MCP_TRANSPORT=http`; the server will bind to the `PORT` environment variable provided by the platform.
+- Hosted platforms such as Smithery require HTTP transport. Set `MCP_TRANSPORT=http`; the server will bind to the `PORT` environment variable provided by the platform. The provided Docker/Smithery config also pins the SSE endpoints to `/.well-known/mcp/sse` and `/.well-known/mcp/messages/` for spec compliance.
 - For local stdio integrations, no additional configuration is required—the server defaults to STDIO when `PORT` is not set.
 
 ## Example Prompts
