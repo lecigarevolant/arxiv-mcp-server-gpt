@@ -125,6 +125,7 @@ You may need to put the full path to the uv executable in the command field. You
 
 ## Deployment
 - Hosted platforms such as Smithery require HTTP transport. Set `MCP_TRANSPORT=http`; the server will bind to the `PORT` environment variable provided by the platform. The provided Docker/Smithery config also pins the SSE endpoints to `/.well-known/mcp/sse` and `/.well-known/mcp/messages/` for spec compliance.
+- Hosted deployments expose Streamable HTTP at `/mcp` and serve a JSON schema at `/.well-known/mcp-config` so Smithery can provision per-session settings (currently just an optional `downloadPath`).
 - For local stdio integrations, no additional configuration is required—the server defaults to STDIO when `PORT` is not set.
 
 ## Example Prompts

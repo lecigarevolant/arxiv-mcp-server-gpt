@@ -10,6 +10,9 @@ from typing import Optional, Tuple, Dict, Any
 
 import httpx
 from fastmcp import Context, FastMCP
+from starlette.responses import JSONResponse
+from starlette.routing import Route
+import uvicorn
 import feedparser
 import fitz
 
@@ -430,7 +433,7 @@ def main():
     )
     parser.add_argument("--host", help="Host to bind for HTTP transport (default 0.0.0.0).")
     parser.add_argument("--port", type=int, help="Port to bind for HTTP transport.")
-    parser.add_argument("--path", help="HTTP endpoint path (default /.well-known/mcp).")
+    parser.add_argument("--path", help="HTTP endpoint path (default /mcp).")
     args = parser.parse_args()
 
     transport = args.transport or os.getenv("MCP_TRANSPORT")
@@ -445,12 +448,67 @@ def main():
             or os.getenv("MCP_HTTP_PATH")
             or os.getenv("FASTMCP_STREAMABLE_HTTP_PATH")
             or os.getenv("FASTMCP_HTTP_PATH")
-            or "/.well-known/mcp"
+            or "/mcp"
         )
         if not path.startswith("/"):
             path = f"/{path}"
+
+        app = mcp.http_app(path=path, transport="http")
+
+        primary_route = None
+        for route in app.router.routes:
+            if getattr(route, "path", None) == path:
+                primary_route = route
+                break
+
+        if primary_route is not None:
+            primary_route.methods = {"GET", "POST", "OPTIONS"}
+            if path != "/.well-known/mcp":
+                app.router.routes.append(
+                    Route(
+                        "/.well-known/mcp",
+                        endpoint=primary_route.endpoint,
+                        methods=["GET", "POST", "OPTIONS"],
+                    )
+                )
+
+        config_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$id": "https://arxiv-mcp/.well-known/mcp-config",
+            "title": "ArXiv MCP Session Configuration",
+            "description": "Optional session configuration for the arXiv MCP server.",
+            "x-query-style": "dot+bracket",
+            "type": "object",
+            "properties": {
+                "downloadPath": {
+                    "type": "string",
+                    "title": "Download path",
+                    "description": "Override the download directory for saved PDFs.",
+                    "default": "/data",
+                }
+            },
+            "required": [],
+            "additionalProperties": False,
+        }
+
+        async def config_endpoint(request):
+            return JSONResponse(config_schema)
+
+        app.router.routes.append(
+            Route("/.well-known/mcp-config", endpoint=config_endpoint, methods=["GET"])
+        )
+
+        log_level = os.getenv("FASTMCP_LOG_LEVEL") or "INFO"
+        uvicorn_config = {
+            "timeout_graceful_shutdown": 0,
+            "lifespan": "on",
+            "log_level": log_level.lower(),
+        }
+
         print(f"Starting arxiv-server via HTTP on {host}:{port}{path}")
-        mcp.run(transport="http", host=host, port=port, path=path)
+        config = uvicorn.Config(app, host=host, port=port, **uvicorn_config)
+        server = uvicorn.Server(config)
+        asyncio.run(server.serve())
     else:
         print("Starting arxiv-server via STDIO transport")
         mcp.run(transport="stdio")

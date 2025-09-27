@@ -16,7 +16,7 @@ startCommand:
     |-
     (config) => ({
       command: 'python',
-      args: ['src/arxiv_server/server.py', '--transport', 'http', '--path', '/.well-known/mcp'],
+      args: ['src/arxiv_server/server.py', '--transport', 'http', '--path', '/mcp'],
       env: {
         DOWNLOAD_PATH: config.downloadPath ?? '/data',
         MCP_TRANSPORT: 'http'
